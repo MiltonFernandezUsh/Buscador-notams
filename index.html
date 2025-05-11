@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Buscador de NOTAMs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #f4faff;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #1a1a1a;
+    }
+
+    header {
+      background-color: #0056b3;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.5em;
+    }
+
+    main {
+      padding: 30px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 1em;
+      border: 2px solid #0056b3;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #resultado {
+      background-color: #ffffff;
+      border: 1px solid #ccc;
+      border-left: 5px solid #007bff;
+      padding: 15px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      font-size: 0.95em;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    .button-row {
+      margin-bottom: 15px;
+    }
+
+    #loading {
+      color: #0056b3;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>Buscador de NOTAMs - ANAC Argentina</header>
+
+  <main>
+    <label for="aerodromos"><strong>Ingresá códigos OACI separados por coma (ej: SAEZ, SABE, SAAR):</strong></label>
+    <input type="text" id="aerodromos" name="aerodromos" value="{{ favoritos }}">
+
+    <div class="button-row">
+      <button onclick="buscar()">Buscar</button>
+      <button onclick="mostrarAyuda()">Ayuda</button>
+    </div>
+
+    <div id="loading"></div>
+    <div id="resultado"></div>
+  </main>
+
+  <footer>Creado por Fernandez Milton</footer>
+
+  <script>
+    function buscar() {
+      const aerodromos = document.getElementById('aerodromos').value;
+      document.getElementById('loading').innerText = '🔎 Buscando NOTAMs...';
+      document.getElementById('resultado').innerText = '';
+
+      fetch('/buscar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `aerodromos=${encodeURIComponent(aerodromos)}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('loading').innerText = '';
+        if (data.status === 'success') {
+          document.getElementById('resultado').innerText = '✅ PDF generado como "NOTAMs_resultado.pdf". Abrilo para ver los NOTAMs.';
+          window.open('NOTAMs_resultado.pdf', '_blank');
+        } else {
+          document.getElementById('resultado').innerText = '❌ ' + data.message;
+        }
+      });
+    }
+
+function mostrarAyuda() {
+  alert(
+    '📘 Instrucciones de uso:\n\n' +
+    '1. Ingresá uno o más códigos OACI separados por coma (ej: SAEZ, SABE).\n' +
+    '2. Hacé clic en "Buscar" para obtener los NOTAMs.\n' +
+    '3. El PDF se abrirá automáticamente.\n\n' +
+    '💾 Macros:\n' +
+    '   Presioná el botón *GUARDAR*. Al volver a abrir el programa, presioná *CARGAR* y se buscarán los últimos aeropuertos guardados.\n\n' +
+    '🌐 Avisos FIR:\n' +
+    '   - AVTD ➜ Todas las FIRs\n' +
+    '   - SAVF ➜ FIR Comodoro\n' +
+    '   - SACF ➜ FIR Córdoba\n' +
+    '   - SAEF ➜ FIR Ezeiza\n' +
+    '   - SAMF ➜ FIR Mendoza\n' +
+    '   - SAAR ➜ FIR Resistencia\n\n' +
+    '📧 Contacto: milton.fernandez@gmail.com'
+  );
+}
+
+  </script>
+</body>
+</html>
